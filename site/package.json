@@ -1,0 +1,12 @@
+{
+  "name": "sites-worker-esm-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/validate-artifact.mjs",
+    "db:generate": "drizzle-kit generate",
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {"drizzle-kit":"^0.31.0", "drizzle-orm":"^0.44.0"}
+}
