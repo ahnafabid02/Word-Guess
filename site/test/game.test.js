@@ -10,3 +10,27 @@ test('counts and hidden lengths, alternating turns, wrong words',()=>{const m=ma
 for(const result of ['RED','BLUE','draw'])test(`${result} result only after BLUE, then bilateral rematch`,()=>{const m=match();guess(m,m.red,'word',result==='BLUE'?'wrong':'pepper');assert.equal(m.room.phase,'playing');assert.equal(view(m.room,m.blue).words,undefined);guess(m,m.blue,'word',result==='RED'?'wrong':'apple');assert.equal(m.room.result,result);assert.deepEqual(view(m.room,m.red).words,['APPLE','PEPPER']);assert.throws(()=>guess(m,m.red,'word','pepper'));action(m.room,m.red,{action:'rematch'});assert.equal(m.room.phase,'result');assert.throws(()=>action(m.room,m.red,{action:'rematch'}));action(m.room,m.blue,{action:'rematch'});assert.equal(m.room.phase,'submission');assert.equal(m.room.round,1);assert.equal(m.red.history.length,0);assert.equal(m.red.secret,null);action(m.room,m.red,{action:'secret',value:'fresh'});action(m.room,m.blue,{action:'secret',value:'words'});assert.equal(m.room.phase,'playing');assert.equal(m.room.turn,0);});
 test('invalid secrets do not consume submission',()=>{const {room,player}=create('Test');join(room.code,'Friend');for(const value of ['a','two words','123','éé','a'.repeat(21)])assert.throws(()=>action(room,player,{action:'secret',value}));assert.equal(player.secret,null);});
 
+
+test('final chance is private, requires a word, and resolves a draw or loss',()=>{
+ for(const answer of ['apple','wrong']){
+  const m=match();
+  assert.equal(view(m.room,m.blue).finalGuess,false);
+  guess(m,m.red,'word','pepper');
+  const v=view(m.room,m.blue);
+  assert.equal(v.finalGuess,true);
+  assert.equal(view(m.room,m.red).finalGuess,false);
+  assert.equal(v.words,undefined);
+  assert.ok(!JSON.stringify(v).includes('PEPPER'));
+  for(const [kind,value] of [['letter','a'],['length',5]]){
+   assert.throws(()=>guess(m,m.blue,kind,value),/final guess/);
+   assert.equal(m.blue.history.length,0);
+   assert.equal(m.room.turn,1);
+  }
+  guess(m,m.blue,'word',answer);
+  assert.equal(m.room.result,answer==='apple'?'draw':'RED');
+  assert.equal(view(m.room,m.blue).finalGuess,false);
+  action(m.room,m.red,{action:'rematch'});
+  action(m.room,m.blue,{action:'rematch'});
+  assert.equal(view(m.room,m.blue).finalGuess,false);
+ }
+});

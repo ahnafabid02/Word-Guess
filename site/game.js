@@ -16,7 +16,7 @@ export function join(code,name) {
 export function identify(code,token) {const room=rooms.get(String(code).toUpperCase()); const player=room?.players.find(p=>p.token===token); if(!player) fail('Your seat could not be found. Create or join a room.'); return {room,player};}
 export function view(room,player) {
  const seat=room.players.indexOf(player);
- return {code:room.code,match:room.match,phase:room.phase,round:room.round,turn:room.turn,seat,result:room.result,history:player.history,players:room.players.map((p,i)=>({name:p.name,color:i===0?'RED':'BLUE',ready:!!p.secret,online:p.connections>0,rematch:p.rematch})),...(room.phase==='result'?{words:room.players.map(p=>p.secret)}:{})};
+ return {code:room.code,match:room.match,phase:room.phase,round:room.round,turn:room.turn,seat,finalGuess:room.phase==='playing'&&room.turn===seat&&room.players[1-seat].solved,result:room.result,history:player.history,players:room.players.map((p,i)=>({name:p.name,color:i===0?'RED':'BLUE',ready:!!p.secret,online:p.connections>0,rematch:p.rematch})),...(room.phase==='result'?{words:room.players.map(p=>p.secret)}:{})};
 }
 export function action(room,player,data) {
  if(data.match!==room.match) fail('This match has changed. Try again with the current match.');
@@ -28,6 +28,7 @@ export function action(room,player,data) {
  } else if(data.action==='guess') {
   if(room.phase!=='playing'||room.turn!==seat) fail('It is not your turn.');
   if(data.round!==room.round) fail('This turn has already been played.');
+  if(room.players[1-seat].solved&&data.kind!=='word') fail('This is your final guess. Guess the whole word to draw.');
   const secret=room.players[1-seat].secret; let value=data.value,feedback;
   if(data.kind==='letter') {if(typeof value!=='string'||!/^[a-z]$/i.test(value)) fail('Guess exactly one English letter.'); value=value.toUpperCase(); const n=[...secret].filter(c=>c===value).length; feedback=n?`${n} ${value}${n===1?'':'s'}`:`No ${value}`;}
   else if(data.kind==='length') {if(!Number.isInteger(Number(value))||Number(value)<2||Number(value)>20) fail('Guess a length from 2 to 20.'); value=Number(value); feedback=value===secret.length?'Correct length!':'Incorrect length.';}

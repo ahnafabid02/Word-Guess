@@ -39,3 +39,10 @@ footer{padding-bottom:max(24px,env(safe-area-inset-bottom))}
  .inline button{padding-inline:16px}
  .room-code{font-size:28px;letter-spacing:4px;padding:16px}
 }
+
+.tabs[hidden]{display:none}
+.final-chance{margin:24px 0;padding:18px;border:1px solid #d89b24;border-radius:12px;background:#fff1cf;color:#705015}
+.final-chance p{margin:8px 0 0;font-size:14px;color:inherit}
+.reveals>div.red{background:#ffebe7;color:#c44337}
+.reveals>div.blue{background:#e7efff;color:#326ac5}
+.reveals>div.red span,.reveals>div.blue span{color:inherit}
